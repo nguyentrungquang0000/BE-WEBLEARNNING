@@ -1,5 +1,6 @@
 package com.example.WebLearn.service.impl;
 
+import com.example.WebLearn.Utils.AuthorizationCheckUtil;
 import com.example.WebLearn.Utils.PageToDTOUltil;
 import com.example.WebLearn.entity.Assignment;
 import com.example.WebLearn.entity.Classroom;
@@ -37,7 +38,8 @@ public class AssignmentServiceImpl implements AssignmentService {
     private ClassroomRepository classroomRepository;
     @Autowired
     private AssignmentSubmitRepository assignmentSubmitRepository;
-
+    @Autowired
+    private AuthorizationCheckUtil authorizationCheckUtil;
     @Override
     public ResponseEntity<Response<Object>> createAssignment(String classId, String title, String description, Date dueDate, MultipartFile file) {
         Assignment assignment = new Assignment();
@@ -47,7 +49,7 @@ public class AssignmentServiceImpl implements AssignmentService {
             return ResponseEntity.status(500).body(new Response<>(500,"Lỗi quyền", null));
         }
         try {
-            if(!file.isEmpty()){
+            if(file != null && !file.isEmpty()){
                 assignment.setFileUrl(driverService.uploadFileToDrive(file));
             }
         } catch (Exception e) {
@@ -104,5 +106,41 @@ public class AssignmentServiceImpl implements AssignmentService {
 
         Map<String, Object> response = PageToDTOUltil.pageToDTO(page, assignmentDTOs);
         return ResponseEntity.ok(new Response<>(200, "success", response));
+    }
+
+    @Override
+    public ResponseEntity<Response<Object>> updateAssignment(String classId, Long assId, String title, String description, Date dueDate, MultipartFile file, String change){
+        if(!authorizationCheckUtil.checkUserAccessToClassroom(classId)){
+            return ResponseEntity.status(401).body(new Response<>(401, "Truy cập trái phép", null));
+        }
+        Assignment assignment = assignmentRepository.findById(assId).orElse(null);
+        if(assignment == null) {
+            return ResponseEntity.status(400).body(new Response<>(400, "Assignment not found", null));
+        }
+        assignment.setTitle(title);
+        assignment.setDescription(description);
+        assignment.setDueDate(dueDate);
+        if(change.equals("true")){
+            //Xoá file cũ
+            if(!assignment.getFileUrl().equals("")){
+                try {
+                    driverService.deleteFileToDrive(assignment.getFileUrl());
+                    assignment.setFileUrl("");
+                }catch (Exception e){
+                    return ResponseEntity.status(500).body(new Response<>(500, e.getMessage(), null));
+                }
+            }
+            //Upfile mới
+            if(file != null && !file.isEmpty()){
+                try {
+                    assignment.setFileUrl(driverService.uploadFileToDrive(file));
+                }catch (Exception e){
+                    return ResponseEntity.status(500).body(new Response<>(500, e.getMessage(), null));
+                }
+            }
+
+        }
+        assignmentRepository.save(assignment);
+        return ResponseEntity.ok(new Response<>(200, "success", null));
     }
 }

@@ -16,9 +16,20 @@ public class LectureController {
     @PostMapping("/class/{classId}/lecture")
     public ResponseEntity<Response<Object>> createLecture(@PathVariable String classId,
                                                           @RequestParam("title") String title,
-                                                          @RequestParam("description") String description,
+                                                          @RequestParam(value = "description", required = false) String description,
                                                           @RequestPart("multipartFile") MultipartFile file){
         return lectureService.createLecture(classId, title, description, file);
+    }
+
+    @PutMapping("/class/{classId}/lecture/{lectureId}")
+    public ResponseEntity<Response<Object>> updateLecture(@PathVariable String classId,
+                                                          @PathVariable Long lectureId,
+                                                          @RequestParam("title") String title,
+                                                          @RequestParam(value = "description", required = false) String description,
+                                                          @RequestPart(value = "multipartFile", required = false) MultipartFile file,
+                                                          @RequestParam(value = "change", required = false) String change
+                                                          ){
+        return lectureService.updateLecture(classId, lectureId, title, description, file, change);
     }
 
     @DeleteMapping("class/{classId}/d/{lectureId}")

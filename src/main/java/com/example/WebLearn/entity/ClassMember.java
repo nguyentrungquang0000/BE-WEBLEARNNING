@@ -25,6 +25,4 @@ public class ClassMember {
     @JoinColumn(name="student_id")
     private Student student;
 
-    @OneToMany(mappedBy = "classMember")
-    private List<Message> messages;
 }

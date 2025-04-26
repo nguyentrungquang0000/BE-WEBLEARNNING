@@ -65,7 +65,7 @@ public class UserServiceImpl implements UserService {
                 return ResponseEntity.status(401).body(new Response<>(401, "Mật khẩu không đúng!", null));
             }
             String token = generateToken(teacher, role); // Sử dụng teacher trong generateToken
-            return ResponseEntity.ok(new Response<>(200, "Xác thực thành công!", new LoginResponse(role, token)));
+            return ResponseEntity.ok(new Response<>(200, "Xác thực thành công!", new LoginResponse(role, teacher.getId(), token)));
         } else if (role.equals("USER")) {
             Student student = (Student) userOptional.get(); // Ép kiểu sang Student
             boolean authenticated = passwordEncoder.matches(password, student.getPassword());
@@ -73,7 +73,7 @@ public class UserServiceImpl implements UserService {
                 return ResponseEntity.status(401).body(new Response<>(401, "Mật khẩu không đúng!", null));
             }
             String token = generateToken(student, role); // Sử dụng student trong generateToken
-            return ResponseEntity.ok(new Response<>(200, "Xác thực thành công!", new LoginResponse(role, token)));
+            return ResponseEntity.ok(new Response<>(200, "Xác thực thành công!", new LoginResponse(role, student.getId(), token)));
         }
 
         return ResponseEntity.status(400).body(new Response<>(400, "Role không hợp lệ", null));
@@ -81,24 +81,24 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public ResponseEntity<Response<Object>> register(RegisterRequest registerRequest) {
-        if(registerRequest.getRole().equals("ADMIN")) {
+        if (registerRequest.getRole().equals("ADMIN")) {
             Teacher teacher = (Teacher) modelMapper.map(registerRequest, Teacher.class);
             teacher.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
             Optional<Teacher> existingTeacher = teacherRepository.findByEmail(teacher.getEmail());
-            if(existingTeacher.isPresent()){
+            if (existingTeacher.isPresent()) {
                 return ResponseEntity.status(409).body(new Response<>(409, "Email đã tồn tại!", null));
             }
             teacherRepository.save(teacher);
-        }else if(registerRequest.getRole().equals("USER")) {
+        } else if (registerRequest.getRole().equals("USER")) {
             Student student = modelMapper.map(registerRequest, Student.class);
             student.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
             Optional<Student> existingStudent = studentRepository.findByEmail(student.getEmail());
-            if(existingStudent.isPresent()){
+            if (existingStudent.isPresent()) {
                 return ResponseEntity.status(409).body(new Response<>(409, "Email đã tồn tại!", null));
             }
             studentRepository.save(student);
         }
-        return ResponseEntity.ok(new Response<>(200,"Đăng kí thành công", null));
+        return ResponseEntity.ok(new Response<>(200, "Đăng kí thành công", null));
     }
 
     private String generateToken(Object user, String role) {
@@ -126,4 +126,13 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+//    public JWTClaimsSet verifyToken(String token) {
+//        try {
+//            SignedJWT signedJWT = SignedJWT.parse(token);
+//            signedJWT.verify(new MACVerifier(signerKey.getBytes()));
+//            return signedJWT.getJWTClaimsSet();
+//        } catch (Exception e) {
+//            throw new RuntimeException("Token invalid!");
+//        }
+//    }
 }

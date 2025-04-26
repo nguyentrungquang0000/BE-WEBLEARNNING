@@ -39,15 +39,19 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST,//
                         "/create-classroom",
                         "/class/*/assignment",
-                        "/class/*/lecture"
+                        "/class/*/lecture",
+                        "/class/*/test"
                 ).hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT,//
                         "/update-classroom",
-                        "/class/*/member"
+                        "/class/*/member",
+                        "class/*/assignment/*",
+                        "/class/*/lecture/*"
                 ).hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE,//
-                        "class/*/d/*",
-                        "/class/*/member/*"
+                        "/class/*/d/*",
+                        "/class/*/member/*",
+                        "/class/*/assignment/*"
                 ).hasRole("ADMIN")
                 .requestMatchers(HttpMethod.POST,//
                         "/class"
@@ -56,9 +60,9 @@ public class SecurityConfig {
                         "/class/*/assignment/*"
                 ).hasRole("USER")
                 .requestMatchers(HttpMethod.GET, "/**").permitAll()
+                .requestMatchers("/ws/**", "/topic/**").permitAll()
                 .anyRequest()
                 .authenticated());
-        httpSecurity.cors(cors -> corsFilter());
         httpSecurity.oauth2ResourceServer(oauth2 -> oauth2.jwt(jwtConfigurer -> jwtConfigurer
                 .decoder(jwtDecoder())
                 .jwtAuthenticationConverter(jwtAuthenticationConverter()))

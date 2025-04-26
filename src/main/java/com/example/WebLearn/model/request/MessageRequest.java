@@ -1,4 +1,4 @@
-package com.example.WebLearn.model.response;
+package com.example.WebLearn.model.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -7,8 +7,8 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class LoginResponse {
-    private String role;
+public class MessageRequest {
+    private String content;
     private Long userId;
-    private String token;
+    private String role;
 }

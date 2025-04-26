@@ -10,4 +10,5 @@ public interface LectureService {
     ResponseEntity<Response<Object>> createLecture(String classId, String title, String description, MultipartFile file);
     ResponseEntity<Response<Object>> deleteLecture(String classId, Long lectureId);
     ResponseEntity<Response<Object>> getLecture(String classId);
+    ResponseEntity<Response<Object>> updateLecture(String classId, Long lectureId, String title, String description, MultipartFile file, String change);
 }

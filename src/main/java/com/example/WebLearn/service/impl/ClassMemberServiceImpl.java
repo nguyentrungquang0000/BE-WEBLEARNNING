@@ -41,17 +41,28 @@ public class ClassMemberServiceImpl implements ClassMemberService {
     public ResponseEntity<Response<Object>> joinClassMember(String classId) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         ClassMember member = classMemberRepository.findByClassroom_IdAndStudent_Email(classId, email);
-        if (member != null) {
-            return ResponseEntity.ok(new Response<>(201, "Học sinh đã gửi yêu cầu", null));
+        if(member == null) {
+            Student student = studentRepository.findByEmail(email).orElse(null);
+            if(student == null) {
+                return ResponseEntity.status(400).body(new Response<>(400, "student not found!", null));
+            }
+            Classroom classroom = classroomRepository.findById(classId).orElse(null);
+            if(classroom == null) {
+                return ResponseEntity.status(400).body(new Response<>(400, "Classroom not found!", null));
+            }
+            ClassMember classMember = new ClassMember();
+            classMember.setStudent(student);
+            classMember.setClassroom(classroom);
+            classMember.setStatusClassMember(StatusClassMember.PENDING);
+            classMemberRepository.save(classMember);
+            return ResponseEntity.ok(new Response<>(200, "success", null));
+        }else if(member.getStatusClassMember().equals(StatusClassMember.LEFT)) {
+            member.setStatusClassMember(StatusClassMember.PENDING);
+            classMemberRepository.save(member);
+            return ResponseEntity.ok(new Response<>(200, "success", null));
+        }else{
+            return ResponseEntity.status(400).body(new Response<>(400, "SV đã gửi yêu cầu hoặc đã tham gia!", null));
         }
-        Student student = studentRepository.findByEmail(email).orElseThrow();
-        Classroom classroom = classroomRepository.findById(classId).orElseThrow();
-        ClassMember classMember = new ClassMember();
-        classMember.setStudent(student);
-        classMember.setClassroom(classroom);
-        classMember.setStatusClassMember(StatusClassMember.PENDING);
-        classMemberRepository.save(classMember);
-        return ResponseEntity.ok(new Response<>(200, "Đề nghị tham gia thành công", null));
     }
 
     @Override
@@ -65,8 +76,9 @@ public class ClassMemberServiceImpl implements ClassMemberService {
         if(!email.equals(classMember.getClassroom().getTeacher().getEmail())){
             return ResponseEntity.status(403).body(new Response<>(403,"Lỗi quyền", null));
         }
-        classMemberRepository.deleteById(classMemberId);
-        return ResponseEntity.ok(new Response<>(200, "Xoá thành công", null));
+        classMember.setStatusClassMember(StatusClassMember.LEFT);
+        classMemberRepository.save(classMember);
+        return ResponseEntity.ok(new Response<>(200, "Yêu cầu rời khỏi thành công", null));
     }
 
     @Override
@@ -75,6 +87,9 @@ public class ClassMemberServiceImpl implements ClassMemberService {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         if(!email.equals(classMember.getClassroom().getTeacher().getEmail())){
             return ResponseEntity.status(403).body(new Response<>(403,"Lỗi quyền", null));
+        }
+        if(classMember.getStatusClassMember().equals(StatusClassMember.LEFT)) {
+            return ResponseEntity.status(400).body(new Response<>(400, "Yêu cầu không tồn tại", null));
         }
         classMember.setStatusClassMember(StatusClassMember.APPROVED);
         classMemberRepository.save(classMember);

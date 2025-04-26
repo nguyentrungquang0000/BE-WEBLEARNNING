@@ -25,6 +25,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -42,6 +43,11 @@ public class AssignmentSubmitServiceImpl implements AssignmentSubmitService {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         Student student = studentRepository.findByEmail(email).orElseThrow();
         Assignment assignment = assignmentRepository.findById(assId).orElseThrow();
+        //Kiểm tra dueDate
+        Date now = new Date();
+        if(now.after(assignment.getDueDate())){
+            return ResponseEntity.status(400).body(new Response<>(400, "Quá hạn", null));
+        }
         AssignmentSubmit assignmentSubmit = new AssignmentSubmit();
         assignmentSubmit.setStudent(student);
         assignmentSubmit.setAssignment(assignment);

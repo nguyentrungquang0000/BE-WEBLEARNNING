@@ -23,10 +23,10 @@ public class AssignmentController {
     @PostMapping("/class/{classId}/assignment")
     public ResponseEntity<Response<Object>> createAssignment(
                  @PathVariable String classId,
-                 @RequestParam("title") String title,
-                 @RequestParam("description") String description,
-                 @RequestParam("dueDate") @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date dueDate,
-                 @RequestPart("multipartFile") MultipartFile file
+                 @RequestParam(value = "title") String title,
+                 @RequestParam(value = "description", required = false) String description,
+                 @RequestParam(value = "dueDate", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date dueDate,
+                 @RequestPart(value = "multipartFile", required = false) MultipartFile file
                 ) throws GeneralSecurityException, IOException {
         return assignmentService.createAssignment(classId, title, description, dueDate, file);
     }
@@ -34,6 +34,17 @@ public class AssignmentController {
     @DeleteMapping("/class/{classId}/assignment/{assId}")
     public ResponseEntity<Response<Object>> deleteAssignment(@PathVariable String classId, @PathVariable Long assId){
         return assignmentService.deleteAssignment(classId, assId);
+    }
+
+    @PutMapping("class/{classId}/assignment/{assId}")
+    public ResponseEntity<Response<Object>> updateAssignment(@PathVariable String classId,
+                                                             @PathVariable Long assId,
+                                                             @RequestParam(value = "title") String title,
+                                                             @RequestParam(value = "description", required = false) String description,
+                                                             @RequestParam(value = "dueDate", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date dueDate,
+                                                             @RequestPart(value = "multipartFile", required = false) MultipartFile file,
+                                                             @RequestParam(value = "change") String change){
+        return assignmentService.updateAssignment(classId, assId, title, description, dueDate, file, change);
     }
 
     @GetMapping("class/{classId}/assignment")
