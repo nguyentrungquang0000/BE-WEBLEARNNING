@@ -11,9 +11,13 @@ import java.util.List;
 @Table(name="quizsubmit")
 @Data
 public class QuizSubmit {
+    public final static  String START_TIME = "startTime";
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+//    @Temporal(TemporalType.TIMESTAMP)
+//    private Date startTime;
 
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)

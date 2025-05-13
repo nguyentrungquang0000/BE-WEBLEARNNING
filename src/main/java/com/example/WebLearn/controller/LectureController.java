@@ -32,12 +32,12 @@ public class LectureController {
         return lectureService.updateLecture(classId, lectureId, title, description, file, change);
     }
 
-    @DeleteMapping("class/{classId}/d/{lectureId}")
+    @DeleteMapping("/class/{classId}/d/{lectureId}")
     public ResponseEntity<Response<Object>> deleteLecture(@PathVariable String classId, @PathVariable Long lectureId){
         return lectureService.deleteLecture(classId, lectureId);
     }
 
-    @GetMapping("class/{classId}/lecture")
+    @GetMapping("/class/{classId}/lecture")
     public ResponseEntity<Response<Object>> getLecture(@PathVariable String classId){
         return lectureService.getLecture(classId);
     }

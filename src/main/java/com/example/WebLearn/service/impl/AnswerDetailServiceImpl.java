@@ -2,17 +2,15 @@ package com.example.WebLearn.service.impl;
 
 import com.example.WebLearn.entity.AnswerDetail;
 import com.example.WebLearn.entity.QuizSubmit;
-import com.example.WebLearn.enumm.StatusAnswer;
-import com.example.WebLearn.enumm.StatusSubmit;
 import com.example.WebLearn.model.dto.AnswerDetailDTO;
 import com.example.WebLearn.model.request.AnswerDetailRequest;
 import com.example.WebLearn.model.response.Response;
 import com.example.WebLearn.repository.AnswerDetailRepository;
 import com.example.WebLearn.repository.QuestionRepository;
 import com.example.WebLearn.service.AnswerDetailService;
-import jakarta.persistence.Tuple;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.util.Pair;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,7 +28,7 @@ public class AnswerDetailServiceImpl implements AnswerDetailService {
 
     @Transactional
     @Override
-    public Tuple saveAnswerDetail(List<AnswerDetailRequest> answerDetailRequests, QuizSubmit quizSubmit) {
+    public Pair<Long, Integer> saveAnswerDetail(List<AnswerDetailRequest> answerDetailRequests, QuizSubmit quizSubmit) {
         for(AnswerDetailRequest answerDetailRequest : answerDetailRequests){
             AnswerDetail answerDetail = new AnswerDetail();
             answerDetail.setQuestion(questionRepository.findById(answerDetailRequest.getQuestionId()).orElse(null));
@@ -38,8 +36,10 @@ public class AnswerDetailServiceImpl implements AnswerDetailService {
             answerDetail.setAnswer(answerDetailRequest.getAnswer());
             answerDetailRepository.save(answerDetail);
         }
+        //kiểm tra
         answerDetailRepository.updateStatusAnswer(quizSubmit.getId());
-        Tuple correct = answerDetailRepository.correctAnswers(quizSubmit.getId());
+        //chấm điểm
+        Pair<Long, Integer> correct = answerDetailRepository.correctAnswers(quizSubmit.getId());
         return correct;
     }
 

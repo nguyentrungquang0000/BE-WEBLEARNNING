@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AnswerDetailController {
     @Autowired
     private AnswerDetailService answerDetailService;
-    @GetMapping("class/{classId}/test/{testId}/submit/{submitId}")
+    @GetMapping("/class/{classId}/test/{testId}/submit/{submitId}")
     public ResponseEntity<Response<Object>> getAnswerDetail(@PathVariable("classId") String classId,
                                                             @PathVariable Long testId,
                                                             @PathVariable Long submitId) {

@@ -13,4 +13,5 @@ public interface AssignmentService {
     ResponseEntity<Response<Object>> deleteAssignment(String classId, Long assId);
     ResponseEntity<Response<Object>> getAssignments(String classId, SearchRequest searchRequest);
     ResponseEntity<Response<Object>> updateAssignment(String classId, Long assId, String title, String description, Date dueDate, MultipartFile file, String change);
+    ResponseEntity<Response<Object>> getAssignmentDetail(Long assId);
 }

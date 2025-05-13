@@ -12,16 +12,18 @@ import com.example.WebLearn.repository.ClassroomRepository;
 import com.example.WebLearn.repository.StudentRepository;
 import com.example.WebLearn.repository.TeacherRepository;
 import com.example.WebLearn.service.ChatService;
-import org.hibernate.sql.ast.tree.expression.Collation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-
-import java.util.*;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
 
 @Service
 public class ChatServiceImpl implements ChatService {
@@ -38,12 +40,12 @@ public class ChatServiceImpl implements ChatService {
         chatDocument.setClassId(classId);
         chatDocument.setContent(messageRequest.getContent());
         if (messageRequest.getRole().equals("ADMIN")) {
-            chatDocument.setRole(RoleEnum.TEACHER);
+            chatDocument.setRole("ADMIN");
             Classroom classroom = classroomRepository.findById(classId).orElseThrow(() -> new RuntimeException("Classroom not found"));
             messageDTO.setSender(classroom.getTeacher().getName());
             chatDocument.setSenderId(classroom.getTeacher().getId());
         }else if(messageRequest.getRole().equals("USER")){
-            chatDocument.setRole(RoleEnum.STUDENT);
+            chatDocument.setRole("USER");
             Student student = studentRepository.findById(messageRequest.getUserId()).orElseThrow(() -> new RuntimeException("Sender not found"));
             messageDTO.setSender(student.getName());
             chatDocument.setSenderId(student.getId());
@@ -57,6 +59,7 @@ public class ChatServiceImpl implements ChatService {
         messageDTO.setDeleted(false);
         messageDTO.setSenderId(messageRequest.getUserId());
         messageDTO.setCreatedAt(save.getDate());
+        messageDTO.setRole(messageRequest.getRole());
         return messageDTO;
     }
 
@@ -89,15 +92,52 @@ public class ChatServiceImpl implements ChatService {
                         message.isDeleted(),
                         message.isPinned(),
                         message.getDate(),
-                        message.getSenderId()
+                        message.getSenderId(),
+                        message.getRole().toString()
                 )
         ).toList();
         return ResponseEntity.ok(new Response<>(200, "OK", messageDTOs));
     }
+
+    @Override
+    public ResponseEntity<Response<Object>> recallMessage(String classId, String messageId) {
+        ChatDocument chatDocument = chatRepository.findById(messageId).orElse(null);
+        if (chatDocument == null) {
+            return ResponseEntity.status(500).body(new Response<>(500, "Message not found", null));
+        }
+        if(chatDocument.isDeleted()){
+            return ResponseEntity.status(500).body(new Response<>(500, "Message deleted", null));
+        }
+        //Kiểm tra quyền
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String role = authentication.getAuthorities().iterator().next().getAuthority();
+        String email = authentication.getName();
+        if (role.startsWith("ROLE_")) {
+            role = role.substring(5); // Cắt bỏ 5 ký tự "ROLE_"
+        }
+        Long userId = 0L;
+        if(!role.equals(chatDocument.getRole())){
+            return ResponseEntity.status(500).body(new Response<>(500, "Vi phạm", null));
+        }
+        if (chatDocument.getRole().equals("USER")) {
+            userId = studentRepository.findByEmail(email).get().getId();
+        }else if(chatDocument.getRole().equals("ADMIN")){
+            userId = teacherRepository.findByEmail(email).get().getId();
+        }
+
+        if(chatDocument.getSenderId() != userId){
+            return ResponseEntity.status(500).body(new Response<>(500, "Vi phạm", null));
+        }
+
+        chatDocument.setDeleted(true);
+        chatRepository.save(chatDocument);
+        return ResponseEntity.ok(new Response<>(200, "OK", null));
+    }
+
     public String getNameSender(String role, Long senderId) {
-        if(role.equals("TEACHER")){
+        if(role.equals("ADMIN")){
             return teacherRepository.findById(senderId).orElse(null).getName();
-        }else if(role.equals("STUDENT")){
+        }else if(role.equals("USER")){
             return studentRepository.findById(senderId).orElse(null).getName();
         }
         throw new RuntimeException();

@@ -36,22 +36,27 @@ public class AssignmentController {
         return assignmentService.deleteAssignment(classId, assId);
     }
 
-    @PutMapping("class/{classId}/assignment/{assId}")
+    @PutMapping("/class/{classId}/assignment/{assId}")
     public ResponseEntity<Response<Object>> updateAssignment(@PathVariable String classId,
                                                              @PathVariable Long assId,
                                                              @RequestParam(value = "title") String title,
                                                              @RequestParam(value = "description", required = false) String description,
                                                              @RequestParam(value = "dueDate", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date dueDate,
                                                              @RequestPart(value = "multipartFile", required = false) MultipartFile file,
-                                                             @RequestParam(value = "change") String change){
+                                                             @RequestParam(value = "change", defaultValue = "false", required = false) String change){
         return assignmentService.updateAssignment(classId, assId, title, description, dueDate, file, change);
     }
 
-    @GetMapping("class/{classId}/assignment")
+    @GetMapping("/class/{classId}/assignment")
     public ResponseEntity<Response<Object>> getAssignments(@PathVariable String classId,
                                                            @ModelAttribute SearchRequest searchRequest
                                                            ) {
 
         return assignmentService.getAssignments(classId, searchRequest);
+    }
+
+    @GetMapping("/assignment/{assId}")
+    public ResponseEntity<Response<Object>> getAssignmentDetail(@PathVariable Long assId){
+        return assignmentService.getAssignmentDetail(assId);
     }
 }

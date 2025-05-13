@@ -21,7 +21,7 @@ public class ChatDocument {
     @MongoId
     private String id;
     private String content;
-    private RoleEnum role;
+    private String role;
     private Long senderId;
     @Indexed(name = "classId_idx")
     private String classId;

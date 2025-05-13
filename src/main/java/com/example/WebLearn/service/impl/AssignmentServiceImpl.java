@@ -12,6 +12,7 @@ import com.example.WebLearn.repository.AssignmentSubmitRepository;
 import com.example.WebLearn.repository.ClassroomRepository;
 import com.example.WebLearn.service.AssignmentService;
 import com.example.WebLearn.service.DriverService;
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -44,7 +45,10 @@ public class AssignmentServiceImpl implements AssignmentService {
     public ResponseEntity<Response<Object>> createAssignment(String classId, String title, String description, Date dueDate, MultipartFile file) {
         Assignment assignment = new Assignment();
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        Classroom classroom = classroomRepository.findById(classId).orElseThrow();
+        Classroom classroom = classroomRepository.findById(classId).orElse(null);
+        if(classroom == null) {
+            return ResponseEntity.status(500).body(new Response<>(500,"Lớp học không tòn tại", null));
+        }
         if(!classroom.getTeacher().getEmail().equals(email)) {
             return ResponseEntity.status(500).body(new Response<>(500,"Lỗi quyền", null));
         }
@@ -67,17 +71,23 @@ public class AssignmentServiceImpl implements AssignmentService {
     @Transactional
     public ResponseEntity<Response<Object>> deleteAssignment(String classId, Long assId) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        Classroom classroom = classroomRepository.findById(classId).orElseThrow();
+        Classroom classroom = classroomRepository.findById(classId).orElse(null);
+        if(classroom == null) {
+            return ResponseEntity.status(500).body(new Response<>(500, "Class not found", null));
+        }
         if(!classroom.getTeacher().getEmail().equals(email)) {
             return ResponseEntity.status(500).body(new Response<>(500,"Lỗi quyền", null));
         }
-        assignmentSubmitRepository.deleteByAssignment_Id(assId);
-        Assignment assignment = assignmentRepository.findById(assId).orElseThrow();
+        Assignment assignment = assignmentRepository.findById(assId).orElse(null);
+        if (assignment == null) {
+            return ResponseEntity.status(404).body(new Response<>(404, "Assignment not found", null));
+        }
         try {
             // Gọi phương thức xóa file từ Google Drive
-            if (!assignment.getFileUrl().equals("")){
+            if (!"".equals(assignment.getFileUrl())){
                 driverService.deleteFileToDrive(assignment.getFileUrl());
             }
+            assignmentSubmitRepository.deleteByAssignment_Id(assId);
             // Xóa assignment trong cơ sở dữ liệu
             assignmentRepository.deleteById(assId);
             return ResponseEntity.ok(new Response<>(200, "Xóa bài tập thành công", null));
@@ -143,4 +153,22 @@ public class AssignmentServiceImpl implements AssignmentService {
         assignmentRepository.save(assignment);
         return ResponseEntity.ok(new Response<>(200, "success", null));
     }
+
+    @Override
+    public ResponseEntity<Response<Object>> getAssignmentDetail(Long assId) {
+        Assignment assignment = assignmentRepository.findById(assId).orElse(null);
+        if (assignment == null) {
+            return ResponseEntity.status(404).body(new Response<>(404, "Assignment not found", null));
+        }
+        AssignmentDTO assignmentDTO = new AssignmentDTO(
+                assignment.getId(),
+                assignment.getTitle(),
+                assignment.getDescription(),
+                assignment.getFileUrl(),
+                assignment.getDueDate(),
+                assignment.getCreatedAt()
+        );
+        return ResponseEntity.ok(new Response<>(200, "success", assignmentDTO));
+    }
+
 }

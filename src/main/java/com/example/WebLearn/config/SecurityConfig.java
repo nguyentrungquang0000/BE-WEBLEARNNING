@@ -45,7 +45,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.PUT,//
                         "/update-classroom",
                         "/class/*/member",
-                        "class/*/assignment/*",
+                        "/class/*/assignment/*",
                         "/class/*/lecture/*"
                 ).hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE,//
@@ -54,12 +54,22 @@ public class SecurityConfig {
                         "/class/*/assignment/*"
                 ).hasRole("ADMIN")
                 .requestMatchers(HttpMethod.POST,//
-                        "/class"
+                        "/class",
+                        "/class/*/quiz/*/start",
+                        "/submit_quiz/*"
+                ).hasRole("USER")
+                .requestMatchers(HttpMethod.PUT,//
+                        "/class/*/quiz/*/update_answer"
+                ).hasRole("USER")
+                .requestMatchers(HttpMethod.GET,//
+                        "/get_status_quiz/*"
                 ).hasRole("USER")
                 .requestMatchers(HttpMethod.DELETE,//
                         "/class/*/assignment/*"
                 ).hasRole("USER")
+                .requestMatchers(HttpMethod.GET, "/class/*", "/myinfo", "/class",   "/class/*/member", "/class/*/assignment", "/assignment/*", "/submit/*").authenticated()
                 .requestMatchers(HttpMethod.GET, "/**").permitAll()
+                .requestMatchers(HttpMethod.PUT, "/class/{classId}/chat/d/{messageId}").authenticated()
                 .requestMatchers("/ws/**", "/topic/**").permitAll()
                 .anyRequest()
                 .authenticated());
@@ -68,6 +78,7 @@ public class SecurityConfig {
                 .jwtAuthenticationConverter(jwtAuthenticationConverter()))
         );
         httpSecurity.csrf(AbstractHttpConfigurer::disable);
+        httpSecurity.cors(cors -> corsFilter());
         return httpSecurity.build();
     }
 
@@ -79,7 +90,7 @@ public class SecurityConfig {
                 .macAlgorithm(MacAlgorithm.HS512)
                 .build();
 
-    };
+    }
 
     @Bean
     JwtAuthenticationConverter jwtAuthenticationConverter() {

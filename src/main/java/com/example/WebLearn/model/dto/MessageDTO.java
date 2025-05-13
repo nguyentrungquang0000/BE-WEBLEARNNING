@@ -17,4 +17,5 @@ public class MessageDTO {
     private boolean isPinned;
     private Date createdAt;
     private Long senderId;
+    private String role;
 }

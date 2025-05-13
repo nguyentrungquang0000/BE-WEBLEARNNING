@@ -13,15 +13,17 @@ import com.example.WebLearn.repository.QuizTestRepository;
 import com.example.WebLearn.repository.StudentRepository;
 import com.example.WebLearn.service.AnswerDetailService;
 import com.example.WebLearn.service.QuizSubmitService;
-import jakarta.persistence.Tuple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.redis.core.HashOperations;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.util.Pair;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
@@ -36,18 +38,27 @@ public class QuizSubmitServiceImpl implements QuizSubmitService {
     private QuizTestRepository quizTestRepository;
     @Autowired
     private AnswerDetailService answerDetailService;
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
+    @Autowired
+    private HashOperations<String, String, Object> hashOperations;
+
     @Override
-    public ResponseEntity<Response<Object>> saveSubmit(List<AnswerDetailRequest> answerDetailRequests, Long quizTestId) {
-        Student student = studentRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName()).orElseThrow();
+    @Transactional
+    public ResponseEntity<Response<Object>> saveSubmit(List<AnswerDetailRequest> answerDetailRequests, Long quizTestId, String email) {
+        Student student = studentRepository.findByEmail(email).orElseThrow();
         QuizSubmit quizSubmit = new QuizSubmit();
         QuizTest quizTest = quizTestRepository.findById(quizTestId).orElseThrow();
         quizSubmit.setQuizTest(quizTest);
         quizSubmit.setStudent(student);
-        Tuple correct = answerDetailService.saveAnswerDetail(answerDetailRequests, quizSubmitRepository.save(quizSubmit));
-        quizSubmit = quizSubmitRepository.findById(correct.get("quizsubmit_id", Long.class)).orElseThrow();
-        quizSubmit.setScore((float) correct.get("correct_answers", Long.class)/(float)quizTest.getCountQuestion());
+        Pair<Long, Integer> correct = answerDetailService.saveAnswerDetail(answerDetailRequests, quizSubmitRepository.save(quizSubmit));
+        if (correct == null) {
+            correct = Pair.of(quizSubmit.getId(), 0);
+        }
+        quizSubmit = quizSubmitRepository.findById(correct.getFirst()).orElseThrow();
+        quizSubmit.setScore((float) correct.getSecond() / (float) quizTest.getCountQuestion() * 10);
         quizSubmitRepository.save(quizSubmit);
-        return ResponseEntity.ok(new Response<>(200, "nộp thành công", correct.get("correct_answers", Long.class)+"/"+quizTest.getCountQuestion()));
+        return ResponseEntity.ok(new Response<>(200, "nộp thành công", correct.getSecond() + "/" + quizTest.getCountQuestion()));
     }
 
     @Override

@@ -33,7 +33,7 @@ public class LectureServiceImpl implements LectureService {
         if(!authorizationCheckUtil.checkUserAccessToClassroom(classId)) {
             return ResponseEntity.status(401).body(new Response<>(401, "Không quyền truy cập", null));
         }
-        if(file.isEmpty()) return ResponseEntity.ok(new Response<>(201, "không có video", null));
+        if(file.isEmpty()) return ResponseEntity.ok(new Response<>(400, "không có video", null));
         Classroom classroom = classroomRepository.findById(classId).orElseThrow();
         Lecture lecture = new Lecture();
         lecture.setClassroom(classroom);

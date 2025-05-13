@@ -1,12 +1,12 @@
 package com.example.WebLearn.repository;
 
 import com.example.WebLearn.entity.AnswerDetail;
-import jakarta.persistence.Tuple;
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.data.util.Pair;
 
 import java.util.List;
 
@@ -27,7 +27,7 @@ public interface AnswerDetailRepository extends JpaRepository<AnswerDetail, Long
             " GROUP BY a.quizsubmit_id;",
             nativeQuery = true
     )
-    Tuple correctAnswers(@Param("quizSubmitId") Long quizSubmitId);
+    Pair<Long, Integer> correctAnswers(@Param("quizSubmitId") Long quizSubmitId);
 
     List<AnswerDetail> findByQuizSubmit_Id(Long quizSubmitId);
 }

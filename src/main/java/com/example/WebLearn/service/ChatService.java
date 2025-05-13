@@ -8,4 +8,5 @@ import org.springframework.http.ResponseEntity;
 public interface ChatService {
     MessageDTO saveMessage(String classId, MessageRequest messageRequest);
     ResponseEntity<Response<Object>> getMessageOld(String classId, String lastMessageId, int limit);
+    ResponseEntity<Response<Object>> recallMessage(String classId, String messageId);
 }

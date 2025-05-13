@@ -39,7 +39,7 @@ public class AssignmentSubmitServiceImpl implements AssignmentSubmitService {
     private AssignmentSubmitRepository assignmentSubmitRepository;
     @Autowired
     private DriverService driverService;
-    public ResponseEntity<Response<Object>> saveAssignment(String classId, Long assId, MultipartFile file) {
+    public ResponseEntity<Response<Object>> saveSubmit(String classId, Long assId, MultipartFile file) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         Student student = studentRepository.findByEmail(email).orElseThrow();
         Assignment assignment = assignmentRepository.findById(assId).orElseThrow();
@@ -104,4 +104,25 @@ public class AssignmentSubmitServiceImpl implements AssignmentSubmitService {
         Map<String, Object> response = PageToDTOUltil.pageToDTO(assignmentSubmitPage, assignmentSubmitDTOs);
         return ResponseEntity.ok(new Response<>(200, "Success", response));
     }
+
+    @Override
+    public ResponseEntity<Response<Object>> getSubmitStu(Long assId) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        AssignmentSubmit assignmentSubmit = assignmentSubmitRepository.findByAssignment_IdAndStudent_Email(assId, email);
+
+        if (assignmentSubmit == null) {
+            return ResponseEntity.ok(new Response<>(209, "Not Found", null));
+        } else {
+            AssignmentSubmitDTO assignmentSubmitDTO = new AssignmentSubmitDTO(
+                    assignmentSubmit.getId(),
+                    assignmentSubmit.getSubmitUrl(),
+                    assignmentSubmit.getScore(),
+                    assignmentSubmit.getSubmissionTime(),
+                    assignmentSubmit.getStatusSubmit(),
+                    assignmentSubmit.getStudent().getName()
+            );
+            return ResponseEntity.ok(new Response<>(200, "ok", assignmentSubmitDTO));
+        }
+    }
+
 }

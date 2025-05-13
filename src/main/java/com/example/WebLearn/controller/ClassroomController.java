@@ -29,4 +29,8 @@ public class ClassroomController {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         return classroomService.deleteClassroom(email, classId);
     }
+    @GetMapping("/class/{classId}")
+    public ResponseEntity<Response<Object>> getClassroom(@PathVariable String classId) {
+        return classroomService.getClassroom(classId);
+    }
 }

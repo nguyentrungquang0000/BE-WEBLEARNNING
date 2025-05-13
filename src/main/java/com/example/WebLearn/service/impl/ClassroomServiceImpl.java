@@ -2,6 +2,7 @@ package com.example.WebLearn.service.impl;
 
 import com.example.WebLearn.entity.Classroom;
 import com.example.WebLearn.entity.Teacher;
+import com.example.WebLearn.model.dto.ClassByUserDTO;
 import com.example.WebLearn.model.response.Response;
 import com.example.WebLearn.repository.ClassroomRepository;
 import com.example.WebLearn.repository.TeacherRepository;
@@ -39,5 +40,14 @@ public class ClassroomServiceImpl implements ClassroomService {
         }
         classroomRepository.deleteById(classroomId);
         return ResponseEntity.ok(new Response<>(200, "Xoá thành công", null));
+    }
+
+    @Override
+    public ResponseEntity<Response<Object>> getClassroom(String classroomId) {
+        Classroom classroom = classroomRepository.findById(classroomId).orElseThrow();
+        ClassByUserDTO classByUserDTO = new ClassByUserDTO();
+        classByUserDTO.setClassName(classroom.getName());
+        classByUserDTO.setClassId(classroom.getId());
+        return ResponseEntity.ok(new Response<>(200, "ok", classByUserDTO));
     }
 }
