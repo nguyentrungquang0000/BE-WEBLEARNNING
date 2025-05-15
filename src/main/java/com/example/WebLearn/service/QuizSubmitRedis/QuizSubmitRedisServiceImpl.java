@@ -3,6 +3,8 @@ package com.example.WebLearn.service.QuizSubmitRedis;
 import com.example.WebLearn.entity.Question;
 import com.example.WebLearn.entity.QuizSubmit;
 import com.example.WebLearn.entity.QuizTest;
+import com.example.WebLearn.model.dto.QuestionTestDTO;
+import com.example.WebLearn.model.dto.QuizTesttingDTO;
 import com.example.WebLearn.model.request.AnswerDetailRequest;
 import com.example.WebLearn.model.response.Response;
 import com.example.WebLearn.repository.QuizSubmitRepository;
@@ -30,6 +32,10 @@ public class QuizSubmitRedisServiceImpl implements QuizSubmitRedisService {
     @Override
     public ResponseEntity<Void> saveQuizStart(String classId, Long quizId) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        QuizSubmit quizSubmit = quizSubmitRepository.findByQuizTest_IdAndStudent_Email(quizId, email).orElse(null);
+        if (quizSubmit == null) {
+            return (ResponseEntity<Void>) ResponseEntity.status(500);
+        }
         QuizTest quizTest = quizTestRepository.findById(quizId).orElseThrow();
         List<Question> questions = quizTest.getQuestions();
         Map<String, String> answers = new HashMap<>();
@@ -64,7 +70,7 @@ public class QuizSubmitRedisServiceImpl implements QuizSubmitRedisService {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         QuizSubmit quizSubmit = quizSubmitRepository.findByQuizTest_IdAndStudent_Email(quizId, email).orElse(null);
         if (quizSubmit != null) {
-            return ResponseEntity.ok(new Response<>(200, "Làm rồi", "SUBMITTED"));
+            return ResponseEntity.ok(new Response<>(200, quizSubmit.getId().toString(), "SUBMITTED"));
         }
         // check đang làm
         String key = "quiz:info:" + email + ":" + quizId;
@@ -90,6 +96,33 @@ public class QuizSubmitRedisServiceImpl implements QuizSubmitRedisService {
         redisTemplate.delete(key);
         if (redisTemplate.hasKey(expirationKey)) redisTemplate.delete(expirationKey);
         return quizSubmitService.saveSubmit(answerDetailRequests, quizId, email);
+    }
+// đang làm
+    @Override
+    public ResponseEntity<Response<Object>> getQuizzing(Long quizId) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        String key = "quiz:info:" + email + ":" + quizId;
+        QuizTest quizTest = quizTestRepository.findById(quizId).orElseThrow();
+        List<Question> questions = quizTest.getQuestions();
+        Map<String, String> answers = new HashMap<>();
+        Date startTime= new Date();
+        if(hashOperations.hasKey(key, QuizSubmit.START_TIME)){
+            answers = (Map<String, String>) hashOperations.get(key, "answers");
+            startTime = (Date) hashOperations.get(key, QuizSubmit.START_TIME);
+        };
+        List<QuestionTestDTO> questionTestDTOs = new ArrayList<>();
+        for (Question question : questions) {
+            QuestionTestDTO questionTestDTO = new QuestionTestDTO();
+            questionTestDTO.setQuestionId(question.getId());
+            questionTestDTO.setTitle(question.getTitle());
+            questionTestDTO.setAnswer(answers.getOrDefault(question.getId().toString(), null));
+            questionTestDTOs.add(questionTestDTO);
+        }
+        QuizTesttingDTO quizTesttingDTO = new QuizTesttingDTO();
+        quizTesttingDTO.setStartTime(startTime);
+        quizTesttingDTO.setQuestions(questionTestDTOs);
+        quizTesttingDTO.setExamTime(quizTest.getExamTime());
+        return ResponseEntity.ok(new Response<>(200, "ok", quizTesttingDTO));
     }
 
     private String getKey(Long quizId) {

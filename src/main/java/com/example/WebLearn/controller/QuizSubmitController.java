@@ -11,6 +11,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 public class QuizSubmitController {
@@ -56,6 +57,14 @@ public class QuizSubmitController {
         return quizSubmitRedisService.submitQuiz(quizId, SecurityContextHolder.getContext().getAuthentication().getName());
     }
 
+    @GetMapping("/quizzing/{quizId}")
+    public ResponseEntity<Response<Object>> getQuizzing(@PathVariable Long quizId){
+        return quizSubmitRedisService.getQuizzing(quizId);
+    }
 
+    @GetMapping("/quizsubmit/{quizSubmitId}")
+    public ResponseEntity<Response<Object>> getResultQuiz(@PathVariable Long quizSubmitId){
+        return quizSubmitService.getResultQuiz(quizSubmitId);
+    }
 
 }

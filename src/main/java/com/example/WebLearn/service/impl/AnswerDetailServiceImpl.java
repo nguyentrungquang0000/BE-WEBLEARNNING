@@ -28,7 +28,7 @@ public class AnswerDetailServiceImpl implements AnswerDetailService {
 
     @Transactional
     @Override
-    public Pair<Long, Integer> saveAnswerDetail(List<AnswerDetailRequest> answerDetailRequests, QuizSubmit quizSubmit) {
+    public Pair<Long, Long> saveAnswerDetail(List<AnswerDetailRequest> answerDetailRequests, QuizSubmit quizSubmit) {
         for(AnswerDetailRequest answerDetailRequest : answerDetailRequests){
             AnswerDetail answerDetail = new AnswerDetail();
             answerDetail.setQuestion(questionRepository.findById(answerDetailRequest.getQuestionId()).orElse(null));
@@ -39,7 +39,7 @@ public class AnswerDetailServiceImpl implements AnswerDetailService {
         //kiểm tra
         answerDetailRepository.updateStatusAnswer(quizSubmit.getId());
         //chấm điểm
-        Pair<Long, Integer> correct = answerDetailRepository.correctAnswers(quizSubmit.getId());
+        Pair<Long, Long> correct = answerDetailRepository.correctAnswers(quizSubmit.getId());
         return correct;
     }
 

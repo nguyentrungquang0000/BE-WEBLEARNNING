@@ -11,4 +11,6 @@ public interface QuizSubmitRepository extends JpaRepository<QuizSubmit, Long> {
     Page<QuizSubmit> findByStudent_NameContainingIgnoreCaseAndQuizTest_Id(String keyword,long quizTestId, Pageable pageable);
 
     Optional<QuizSubmit> findByQuizTest_IdAndStudent_Email(Long quizTestId, String studentEmail);
+
+    Optional<QuizSubmit> findByQuizTest_IdAndStudent_Id(Long quizTestId, Long userId);
 }

@@ -1,6 +1,7 @@
 package com.example.WebLearn.controller;
 
 import com.example.WebLearn.model.request.QuizTestRequest;
+import com.example.WebLearn.model.request.QuizUpdateRequest;
 import com.example.WebLearn.model.request.SearchRequest;
 import com.example.WebLearn.model.response.Response;
 import com.example.WebLearn.service.QuestionService;
@@ -24,5 +25,16 @@ public class QuizTestController {
                                                         @ModelAttribute SearchRequest searchRequest
     ) {
         return quizTestService.getQuizTest(classId, searchRequest);
+    }
+
+    @GetMapping("/class/{classId}/quiz/{quizId}/detail")
+    public ResponseEntity<Response<Object>> getQuizDetail(@PathVariable String classId,
+                                                          @PathVariable Long quizId) {
+        return quizTestService.getQuizDetail(classId, quizId);
+    }
+
+    @PutMapping("/quiz/{quizId}/update")
+    public ResponseEntity<Response<Object>> updateQuizInfo(@PathVariable Long quizId, @RequestBody QuizUpdateRequest quizUpdateRequest){
+        return quizTestService.updateQuizInfo(quizId, quizUpdateRequest);
     }
 }

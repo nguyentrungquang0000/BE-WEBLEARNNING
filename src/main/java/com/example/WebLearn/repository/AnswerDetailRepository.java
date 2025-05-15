@@ -27,7 +27,7 @@ public interface AnswerDetailRepository extends JpaRepository<AnswerDetail, Long
             " GROUP BY a.quizsubmit_id;",
             nativeQuery = true
     )
-    Pair<Long, Integer> correctAnswers(@Param("quizSubmitId") Long quizSubmitId);
+    Pair<Long, Long> correctAnswers(@Param("quizSubmitId") Long quizSubmitId);
 
     List<AnswerDetail> findByQuizSubmit_Id(Long quizSubmitId);
 }

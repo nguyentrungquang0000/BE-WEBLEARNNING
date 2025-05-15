@@ -46,12 +46,18 @@ public class SecurityConfig {
                         "/update-classroom",
                         "/class/*/member",
                         "/class/*/assignment/*",
-                        "/class/*/lecture/*"
+                        "/class/*/lecture/*",
+                        "/quiz/*/update"
                 ).hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE,//
                         "/class/*/d/*",
                         "/class/*/member/*",
                         "/class/*/assignment/*"
+                ).hasRole("ADMIN")
+                .requestMatchers(HttpMethod.GET,//
+                        "class/*/test/*/submit",
+                        "/class/*/test/*/question",
+                        "/class/*/quiz/*/detail"
                 ).hasRole("ADMIN")
                 .requestMatchers(HttpMethod.POST,//
                         "/class",
@@ -62,12 +68,13 @@ public class SecurityConfig {
                         "/class/*/quiz/*/update_answer"
                 ).hasRole("USER")
                 .requestMatchers(HttpMethod.GET,//
-                        "/get_status_quiz/*"
+                        "/get_status_quiz/*",
+                        "/quizzing/*"
                 ).hasRole("USER")
                 .requestMatchers(HttpMethod.DELETE,//
                         "/class/*/assignment/*"
                 ).hasRole("USER")
-                .requestMatchers(HttpMethod.GET, "/class/*", "/myinfo", "/class",   "/class/*/member", "/class/*/assignment", "/assignment/*", "/submit/*").authenticated()
+                .requestMatchers(HttpMethod.GET, "/quizsubmit/*", "/class/*", "/myinfo", "/class",   "/class/*/member", "/class/*/assignment", "/assignment/*", "/submit/*").authenticated()
                 .requestMatchers(HttpMethod.GET, "/**").permitAll()
                 .requestMatchers(HttpMethod.PUT, "/class/{classId}/chat/d/{messageId}").authenticated()
                 .requestMatchers("/ws/**", "/topic/**").permitAll()

@@ -4,6 +4,8 @@ import com.example.WebLearn.Utils.PageToDTOUltil;
 import com.example.WebLearn.entity.QuizSubmit;
 import com.example.WebLearn.entity.QuizTest;
 import com.example.WebLearn.entity.Student;
+import com.example.WebLearn.model.dto.AnswerResultDTO;
+import com.example.WebLearn.model.dto.QuizResultDTO;
 import com.example.WebLearn.model.dto.QuizSubmitDTO;
 import com.example.WebLearn.model.request.AnswerDetailRequest;
 import com.example.WebLearn.model.request.SearchRequest;
@@ -22,6 +24,7 @@ import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.util.Pair;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,12 +54,18 @@ public class QuizSubmitServiceImpl implements QuizSubmitService {
         QuizTest quizTest = quizTestRepository.findById(quizTestId).orElseThrow();
         quizSubmit.setQuizTest(quizTest);
         quizSubmit.setStudent(student);
-        Pair<Long, Integer> correct = answerDetailService.saveAnswerDetail(answerDetailRequests, quizSubmitRepository.save(quizSubmit));
+        Pair<Long, Long> correct = answerDetailService.saveAnswerDetail(answerDetailRequests, quizSubmitRepository.save(quizSubmit));
         if (correct == null) {
-            correct = Pair.of(quizSubmit.getId(), 0);
+            correct = Pair.of(quizSubmit.getId(), 0L);
         }
         quizSubmit = quizSubmitRepository.findById(correct.getFirst()).orElseThrow();
-        quizSubmit.setScore((float) correct.getSecond() / (float) quizTest.getCountQuestion() * 10);
+
+        int correctCount = correct.getSecond().intValue(); // ✅ Đúng
+        int totalQuestions = quizTest.getCountQuestion();
+
+        float score = ((float) correctCount / totalQuestions) * 10;
+        quizSubmit.setScore(score);
+
         quizSubmitRepository.save(quizSubmit);
         return ResponseEntity.ok(new Response<>(200, "nộp thành công", correct.getSecond() + "/" + quizTest.getCountQuestion()));
     }
@@ -77,4 +86,27 @@ public class QuizSubmitServiceImpl implements QuizSubmitService {
         Map<String, Object> response = PageToDTOUltil.pageToDTO(quizSubmitPage, quizSubmits);
         return ResponseEntity.ok(new Response<>(200, "ok", response));
     }
+
+    @Override
+    public ResponseEntity<Response<Object>> getResultQuiz(Long quizSubmitId) {
+        QuizSubmit quizSubmit = quizSubmitRepository.findById(quizSubmitId).orElseThrow();
+
+        List<AnswerResultDTO> questions = quizSubmit.getAnswerDetails().stream().map(
+                answer -> new AnswerResultDTO(
+                        answer.getQuestion().getId(),
+                        answer.getQuestion().getTitle(),
+                        answer.getAnswer(),
+                        answer.getQuestion().getResult()
+                )
+        ).toList();
+        QuizResultDTO quizResultDTO = new QuizResultDTO(
+                quizSubmit.getScore(),
+                quizSubmit.getQuizTest().getName(),
+                quizSubmit.getStudent().getName(),
+                quizSubmit.getSubmissionTime(),
+                questions
+        );
+        return ResponseEntity.ok(new Response<>(200, "ok", quizResultDTO));
+    }
+
 }

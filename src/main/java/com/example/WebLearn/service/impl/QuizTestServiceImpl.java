@@ -5,6 +5,7 @@ import com.example.WebLearn.entity.Classroom;
 import com.example.WebLearn.entity.QuizTest;
 import com.example.WebLearn.model.dto.QuizTestDTO;
 import com.example.WebLearn.model.request.QuizTestRequest;
+import com.example.WebLearn.model.request.QuizUpdateRequest;
 import com.example.WebLearn.model.request.SearchRequest;
 import com.example.WebLearn.model.response.Response;
 import com.example.WebLearn.repository.ClassroomRepository;
@@ -55,5 +56,18 @@ public class QuizTestServiceImpl implements QuizTestService {
         return ResponseEntity.ok(new Response<>(200, "ok", response));
     }
 
+    @Override
+    public ResponseEntity<Response<Object>> getQuizDetail(String classId, Long quizId) {
+        QuizTest quizTest = quizTestRepository.findById(quizId).orElseThrow();
+        QuizTestDTO quizTestDTO = modelMapper.map(quizTest, QuizTestDTO.class);
+        return ResponseEntity.ok(new Response<>(200, "ok", quizTestDTO));
+    }
 
+    @Override
+    public ResponseEntity<Response<Object>> updateQuizInfo(Long quizId, QuizUpdateRequest quizUpdateRequest) {
+        QuizTest quizTest = quizTestRepository.findById(quizId).orElseThrow();
+        modelMapper.map(quizUpdateRequest, quizTest);
+        quizTestRepository.save(quizTest);
+        return ResponseEntity.ok(new Response<>(200, "Sửa thành công !", null));
+    }
 }

@@ -9,6 +9,6 @@ import org.springframework.http.ResponseEntity;
 import java.util.List;
 
 public interface AnswerDetailService {
-    Pair<Long, Integer> saveAnswerDetail(List<AnswerDetailRequest> answerDetailRequests, QuizSubmit quizSubmit);
+    Pair<Long, Long> saveAnswerDetail(List<AnswerDetailRequest> answerDetailRequests, QuizSubmit quizSubmit);
     ResponseEntity<Response<Object>> getAnswerDetail(String classId, Long quizTestId, Long submitId);
 }

@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class QuestionController {
     @Autowired
     private QuestionService questionService;
-    @GetMapping("class/{classId}/test/{quizTestId}/question")
+    @GetMapping("/class/{classId}/test/{quizTestId}/question")
     public ResponseEntity<Response<Object>> getQuestion(@PathVariable("classId") String classId,
                                                         @PathVariable("quizTestId") Long quizTestId) {
         return questionService.getQuestion(classId, quizTestId);
