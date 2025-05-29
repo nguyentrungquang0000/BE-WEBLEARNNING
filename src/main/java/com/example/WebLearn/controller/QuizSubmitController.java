@@ -7,6 +7,7 @@ import com.example.WebLearn.service.QuizSubmitRedis.QuizSubmitRedisService;
 import com.example.WebLearn.service.QuizSubmitService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,12 +20,8 @@ public class QuizSubmitController {
     private QuizSubmitService quizSubmitService;
     @Autowired
     private QuizSubmitRedisService quizSubmitRedisService;
-//    @PostMapping("/quiztest/{quizTestId}")
-//    public ResponseEntity<Response<Object>> submitQuiz(@PathVariable Long quizTestId,
-//                                                       @RequestBody List<AnswerDetailRequest> answerDetailRequests) {
-//        return quizSubmitService.saveSubmit(answerDetailRequests, quizTestId);
-//    }
 
+    @PreAuthorize("@classPermission.hasAccess(#classId)")
     @GetMapping("class/{classId}/test/{quizTestId}/submit")
     public ResponseEntity<Response<Object>> getQuizSubmit(@PathVariable String classId,
                                                           @PathVariable Long quizTestId,
@@ -32,13 +29,13 @@ public class QuizSubmitController {
                                                           ) {
         return quizSubmitService.getSubmit(classId, quizTestId, searchRequest);
     }
-
+    @PreAuthorize("@classPermission.hasAccess(#classId)")
     @PostMapping("/class/{classId}/quiz/{quizId}/start")
     public ResponseEntity<Void> startQuiz(@PathVariable String classId,
                                           @PathVariable Long quizId){
         return quizSubmitRedisService.saveQuizStart(classId, quizId);
     }
-
+    @PreAuthorize("@classPermission.hasAccess(#classId)")
     @PutMapping("/class/{classId}/quiz/{quizId}/update_answer")
     public ResponseEntity<Void> updateAnswer(@PathVariable String classId,
                                              @PathVariable Long quizId,
@@ -46,7 +43,10 @@ public class QuizSubmitController {
                                              ){
         return quizSubmitRedisService.updateAnswer(classId, quizId, answerDetailRequest);
     }
+
+
     // Lay trang thai bai lam
+
     @GetMapping("/get_status_quiz/{quizId}")
     public ResponseEntity<Response<Object>> getQuizStatus(@PathVariable Long quizId){
         return quizSubmitRedisService.getQuizStatus(quizId);

@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -23,6 +24,7 @@ import javax.crypto.spec.SecretKeySpec;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfig {
     @Value("${jwt.signerKey}")
     private String signerKey;
@@ -65,7 +67,9 @@ public class SecurityConfig {
                         "/submit_quiz/*"
                 ).hasRole("USER")
                 .requestMatchers(HttpMethod.PUT,//
-                        "/class/*/quiz/*/update_answer"
+                        "/class/*/quiz/*/update_answer",
+                        "/class/*/leave",
+                        "/class/{classId}/member"
                 ).hasRole("USER")
                 .requestMatchers(HttpMethod.GET,//
                         "/get_status_quiz/*",
@@ -74,7 +78,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.DELETE,//
                         "/class/*/assignment/*"
                 ).hasRole("USER")
-                .requestMatchers(HttpMethod.GET, "/quizsubmit/*", "/class/*", "/myinfo", "/class",   "/class/*/member", "/class/*/assignment", "/assignment/*", "/submit/*").authenticated()
+                .requestMatchers(HttpMethod.GET, "/class/{classId}/lecture", "/class/*/test", "/dashboard/*", "/quizsubmit/*", "/class/*", "/myinfo", "/class",   "/class/*/member", "/class/*/assignment", "/assignment/*", "/submit/*").authenticated()
                 .requestMatchers(HttpMethod.GET, "/**").permitAll()
                 .requestMatchers(HttpMethod.PUT, "/class/{classId}/chat/d/{messageId}").authenticated()
                 .requestMatchers("/ws/**", "/topic/**").permitAll()

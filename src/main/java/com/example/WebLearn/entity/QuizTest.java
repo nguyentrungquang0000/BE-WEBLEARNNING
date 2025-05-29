@@ -22,6 +22,7 @@ public class QuizTest {
     @CreationTimestamp // Thời gian đăng
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdAt;
+
     private Date startTime;
 
     private Date endTime;

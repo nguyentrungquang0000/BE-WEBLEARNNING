@@ -2,17 +2,16 @@ package com.example.WebLearn.service.impl;
 
 import com.example.WebLearn.entity.Classroom;
 import com.example.WebLearn.entity.Teacher;
+import com.example.WebLearn.enumm.StatusClassMember;
 import com.example.WebLearn.model.dto.ClassByUserDTO;
+import com.example.WebLearn.model.dto.ClassDashboardDTO;
 import com.example.WebLearn.model.response.Response;
 import com.example.WebLearn.repository.ClassroomRepository;
 import com.example.WebLearn.repository.TeacherRepository;
 import com.example.WebLearn.service.ClassroomService;
-import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 public class ClassroomServiceImpl implements ClassroomService {
@@ -49,5 +48,22 @@ public class ClassroomServiceImpl implements ClassroomService {
         classByUserDTO.setClassName(classroom.getName());
         classByUserDTO.setClassId(classroom.getId());
         return ResponseEntity.ok(new Response<>(200, "ok", classByUserDTO));
+    }
+
+    @Override
+    public ResponseEntity<Response<Object>> getDashboard(String classId) {
+        Classroom classroom = classroomRepository.findById(classId).orElseThrow();
+        ClassDashboardDTO classDashboardDTO = new ClassDashboardDTO(
+                classroom.getLectures().size(),
+                classroom.getAssignments().size(),
+                classroom.getClassMembers().stream()
+                        .filter(classMember -> classMember.getStatusClassMember().equals(StatusClassMember.APPROVED))
+                        .count(),
+                classroom.getQuizTests().size(),
+                classroom.getName(),
+                classroom.getTeacher().getName(),
+                classroom.getId()
+        );
+        return ResponseEntity.ok(new Response<>(200, "ok", classDashboardDTO));
     }
 }

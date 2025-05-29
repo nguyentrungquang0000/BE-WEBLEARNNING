@@ -8,6 +8,7 @@ import com.example.WebLearn.service.QuestionService;
 import com.example.WebLearn.service.QuizTestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -19,14 +20,14 @@ public class QuizTestController {
                                                            @RequestBody QuizTestRequest quizTestRequest) {
         return quizTestService.createQuizzTest(classId, quizTestRequest);
     }
-
-    @GetMapping("class/{classId}/test")
+    @PreAuthorize("@classPermission.hasAccess(#classId)")
+    @GetMapping("/class/{classId}/test")
     public ResponseEntity<Response<Object>> getQuizTest(@PathVariable("classId") String classId,
                                                         @ModelAttribute SearchRequest searchRequest
     ) {
         return quizTestService.getQuizTest(classId, searchRequest);
     }
-
+    @PreAuthorize("@classPermission.hasAccess(#classId)")
     @GetMapping("/class/{classId}/quiz/{quizId}/detail")
     public ResponseEntity<Response<Object>> getQuizDetail(@PathVariable String classId,
                                                           @PathVariable Long quizId) {

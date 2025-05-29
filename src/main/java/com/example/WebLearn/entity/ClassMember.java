@@ -17,6 +17,7 @@ public class ClassMember {
 
     @Enumerated(EnumType.STRING)
     private StatusClassMember statusClassMember;
+
     @ManyToOne
     @JoinColumn(name="classroom_id")
     private Classroom classroom;

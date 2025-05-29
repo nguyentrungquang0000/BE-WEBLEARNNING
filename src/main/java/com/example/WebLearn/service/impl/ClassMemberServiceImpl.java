@@ -1,6 +1,5 @@
 package com.example.WebLearn.service.impl;
 
-import com.example.WebLearn.Utils.AuthorizationCheckUtil;
 import com.example.WebLearn.Utils.PageToDTOUltil;
 import com.example.WebLearn.entity.ClassMember;
 import com.example.WebLearn.entity.Classroom;
@@ -35,8 +34,7 @@ public class ClassMemberServiceImpl implements ClassMemberService {
     private StudentRepository studentRepository;
     @Autowired
     private ClassroomRepository classroomRepository;
-    @Autowired
-    private AuthorizationCheckUtil authorizationCheckUtil;
+
     @Override
     public ResponseEntity<Response<Object>> joinClassMember(String classId) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -67,10 +65,6 @@ public class ClassMemberServiceImpl implements ClassMemberService {
 
     @Override
     public ResponseEntity<Response<Object>> removeClassMember(Long classMemberId, String classId) {
-
-        if(!authorizationCheckUtil.checkUserAccessToClassroom(classId)) {
-            return ResponseEntity.ok(new Response<>(401, "Lỗi phân quyền", null));
-        }
         ClassMember classMember = classMemberRepository.findById(classMemberId).orElseThrow();
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         if(!email.equals(classMember.getClassroom().getTeacher().getEmail())){
@@ -140,6 +134,7 @@ public class ClassMemberServiceImpl implements ClassMemberService {
 
     @Override
     public ResponseEntity<Response<Object>> getMemberByClass(String classId, SearchRequest searchRequest) {
+
         Sort sort = searchRequest.direction.equals("asc") ? Sort.by(searchRequest.sortBy).ascending() : Sort.by(searchRequest.sortBy).descending();
         Pageable pageable = PageRequest.of(searchRequest.getPage(), searchRequest.getLimit(), sort);
         Page<ClassMember> classMemberPage = classMemberRepository
@@ -166,5 +161,20 @@ public class ClassMemberServiceImpl implements ClassMemberService {
                 )
         ).toList();
         return ResponseEntity.ok(new Response<>(200, "ok", pendingByClassDTOs));
+    }
+
+    @Override
+    public ResponseEntity<Response<Object>> leaveClassMember(String classId) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        if(email==null){
+            return ResponseEntity.status(500).body(new Response<>(500, "error", null));
+        }
+        ClassMember classMember = classMemberRepository.findByClassroom_IdAndStudent_EmailAndStatusClassMember(classId, email, StatusClassMember.APPROVED);
+        if (classMember == null) {
+            return ResponseEntity.status(500).body(new Response<>(500, "error", null));
+        }
+        classMember.setStatusClassMember(StatusClassMember.LEFT);
+        classMemberRepository.save(classMember);
+        return ResponseEntity.ok(new Response<>(200, "ok", null));
     }
 }

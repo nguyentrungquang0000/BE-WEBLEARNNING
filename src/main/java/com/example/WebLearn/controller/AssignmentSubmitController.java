@@ -6,6 +6,7 @@ import com.example.WebLearn.model.response.Response;
 import com.example.WebLearn.service.AssignmentSubmitService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -13,7 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class AssignmentSubmitController {
     @Autowired
     private AssignmentSubmitService assignmentSubmitService;
-
+    @PreAuthorize("@classPermission.hasAccess(#classId)")
     @PostMapping("/class/{classId}/assignment/{assId}")
     public ResponseEntity<Response<Object>> submitAssignment(@PathVariable String classId,
                                                              @PathVariable Long assId,
@@ -21,7 +22,7 @@ public class AssignmentSubmitController {
     ) {
         return assignmentSubmitService.saveSubmit(classId, assId, file);
     }
-
+    @PreAuthorize("@classPermission.hasAccess(#classId)")
     @PutMapping("/class/{classId}/assignment/{assId}/s/{submitId}")
     public ResponseEntity<Response<Object>> scoredSubmit(@PathVariable String classId,
                                                          @PathVariable Long assId,
@@ -30,14 +31,14 @@ public class AssignmentSubmitController {
     ) {
         return assignmentSubmitService.scoreSubmit(classId, assId, submitId, scoreRequest.getScore());
     }
-
+    @PreAuthorize("@classPermission.hasAccess(#classId)")
     @DeleteMapping("/class/{classId}/assignment/{assId}/d/{submitId}")
     public ResponseEntity<Response<Object>> deleteSubmit(@PathVariable String classId,
                                                          @PathVariable Long assId,
                                                          @PathVariable Long submitId) {
         return assignmentSubmitService.deleteSubmit(classId, assId, submitId);
     }
-
+    @PreAuthorize("@classPermission.hasAccess(#classId)")
     @GetMapping("/class/{classId}/assignment/{assId}")
     public ResponseEntity<Response<Object>> getAssignmentSubmit(@PathVariable String classId,
                                                                 @PathVariable Long assId,

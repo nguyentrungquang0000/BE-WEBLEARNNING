@@ -6,6 +6,7 @@ import com.example.WebLearn.model.response.Response;
 import com.example.WebLearn.service.LectureService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -13,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class LectureController {
     @Autowired
     private LectureService lectureService;
+    @PreAuthorize("@classPermission.hasAccess(#classId)")
     @PostMapping("/class/{classId}/lecture")
     public ResponseEntity<Response<Object>> createLecture(@PathVariable String classId,
                                                           @RequestParam("title") String title,
@@ -31,12 +33,12 @@ public class LectureController {
                                                           ){
         return lectureService.updateLecture(classId, lectureId, title, description, file, change);
     }
-
+    @PreAuthorize("@classPermission.hasAccess(#classId)")
     @DeleteMapping("/class/{classId}/d/{lectureId}")
     public ResponseEntity<Response<Object>> deleteLecture(@PathVariable String classId, @PathVariable Long lectureId){
         return lectureService.deleteLecture(classId, lectureId);
     }
-
+    @PreAuthorize("@classPermission.hasAccess(#classId)")
     @GetMapping("/class/{classId}/lecture")
     public ResponseEntity<Response<Object>> getLecture(@PathVariable String classId){
         return lectureService.getLecture(classId);

@@ -33,10 +33,15 @@ public class QuizSubmitRedisServiceImpl implements QuizSubmitRedisService {
     public ResponseEntity<Void> saveQuizStart(String classId, Long quizId) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         QuizSubmit quizSubmit = quizSubmitRepository.findByQuizTest_IdAndStudent_Email(quizId, email).orElse(null);
-        if (quizSubmit == null) {
-            return (ResponseEntity<Void>) ResponseEntity.status(500);
+        if (quizSubmit != null) {
+            return ResponseEntity.status(500).build();
         }
         QuizTest quizTest = quizTestRepository.findById(quizId).orElseThrow();
+        //kiểm tra tg
+        if(new Date().before(quizTest.getStartTime()) || new Date().after(quizTest.getEndTime())){
+            return ResponseEntity.status(500).build();
+        }
+
         List<Question> questions = quizTest.getQuestions();
         Map<String, String> answers = new HashMap<>();
         for (Question question : questions) {

@@ -1,6 +1,5 @@
 package com.example.WebLearn.service.impl;
 
-import com.example.WebLearn.Utils.AuthorizationCheckUtil;
 import com.example.WebLearn.Utils.PageToDTOUltil;
 import com.example.WebLearn.entity.Assignment;
 import com.example.WebLearn.entity.Classroom;
@@ -12,7 +11,6 @@ import com.example.WebLearn.repository.AssignmentSubmitRepository;
 import com.example.WebLearn.repository.ClassroomRepository;
 import com.example.WebLearn.service.AssignmentService;
 import com.example.WebLearn.service.DriverService;
-import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -39,8 +37,6 @@ public class AssignmentServiceImpl implements AssignmentService {
     private ClassroomRepository classroomRepository;
     @Autowired
     private AssignmentSubmitRepository assignmentSubmitRepository;
-    @Autowired
-    private AuthorizationCheckUtil authorizationCheckUtil;
     @Override
     public ResponseEntity<Response<Object>> createAssignment(String classId, String title, String description, Date dueDate, MultipartFile file) {
         Assignment assignment = new Assignment();
@@ -98,6 +94,7 @@ public class AssignmentServiceImpl implements AssignmentService {
 
     @Override
     public ResponseEntity<Response<Object>> getAssignments(String classId, SearchRequest searchRequest) {
+
         Sort sort = searchRequest.direction.equals("asc") ? Sort.by(searchRequest.sortBy).ascending() : Sort.by(searchRequest.sortBy).descending();
         Pageable pageable = PageRequest.of(searchRequest.page, searchRequest.limit, sort);
         Page<Assignment> page = assignmentRepository.findByTitleContainingIgnoreCaseAndClassroom_Id(searchRequest.keyword, classId ,pageable);
@@ -120,9 +117,6 @@ public class AssignmentServiceImpl implements AssignmentService {
 
     @Override
     public ResponseEntity<Response<Object>> updateAssignment(String classId, Long assId, String title, String description, Date dueDate, MultipartFile file, String change){
-        if(!authorizationCheckUtil.checkUserAccessToClassroom(classId)){
-            return ResponseEntity.status(401).body(new Response<>(401, "Truy cập trái phép", null));
-        }
         Assignment assignment = assignmentRepository.findById(assId).orElse(null);
         if(assignment == null) {
             return ResponseEntity.status(400).body(new Response<>(400, "Assignment not found", null));

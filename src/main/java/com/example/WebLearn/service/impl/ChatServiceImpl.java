@@ -131,7 +131,7 @@ public class ChatServiceImpl implements ChatService {
 
         chatDocument.setDeleted(true);
         chatRepository.save(chatDocument);
-        return ResponseEntity.ok(new Response<>(200, "OK", null));
+        return ResponseEntity.ok(new Response<>(200, "RECALL", messageId));
     }
 
     public String getNameSender(String role, Long senderId) {

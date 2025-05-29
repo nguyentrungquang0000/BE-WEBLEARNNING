@@ -2,6 +2,8 @@ package com.example.WebLearn.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.CascadeType;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.util.Date;
@@ -30,6 +32,7 @@ public class QuizSubmit {
     private Student student;
 
     @OneToMany(mappedBy = "quizSubmit")
+    @Cascade(value = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REMOVE})
     private List<AnswerDetail> answerDetails;
 
     @ManyToOne

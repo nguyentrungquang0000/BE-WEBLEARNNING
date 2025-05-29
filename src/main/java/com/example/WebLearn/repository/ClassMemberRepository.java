@@ -13,4 +13,5 @@ public interface ClassMemberRepository extends JpaRepository<ClassMember, Long> 
     Page<ClassMember> findByStudent_NameContainingIgnoreCaseAndStatusClassMemberAndClassroom_Id(String keyword, StatusClassMember status, String classId, Pageable pageable);
     List<ClassMember> findByClassroom_IdAndStatusClassMember(String classId, StatusClassMember status);
     ClassMember findByClassroom_IdAndStudent_Email(String classId, String email);
+    ClassMember findByClassroom_IdAndStudent_EmailAndStatusClassMember(String classId, String email, StatusClassMember status);
 }
