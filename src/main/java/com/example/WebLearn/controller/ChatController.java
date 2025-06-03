@@ -52,15 +52,5 @@ public class ChatController {
         return chatService.recallMessage(classId, messageId);
     }
 
-//    @PreAuthorize("@classPermission.hasAccess(#classId)")
-//    @MessageMapping("/class/{classId}/send")
-//    public void recallMessage1(@DestinationVariable String classId,
-//                                                           @Payload String messageId) {
-//        try {
-//            chatService.recallMessage(classId, messageId);
-//            messagingTemplate.convertAndSend("/topic/class/" + classId, messageId);
-//        } catch (MessagingException e) {
-//            throw new RuntimeException(e);
-//        }
-//    }
+
 }

@@ -78,7 +78,19 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.DELETE,//
                         "/class/*/assignment/*"
                 ).hasRole("USER")
-                .requestMatchers(HttpMethod.GET, "/class/{classId}/lecture", "/class/*/test", "/dashboard/*", "/quizsubmit/*", "/class/*", "/myinfo", "/class",   "/class/*/member", "/class/*/assignment", "/assignment/*", "/submit/*").authenticated()
+                .requestMatchers(HttpMethod.GET, "/class/{classId}/lecture",
+                        "/class/*/test",
+                        "/dashboard/*",
+                        "/quizsubmit/*",
+                        "/class/*",
+                        "/myinfo",
+                        "/class",
+                        "/class/*/member",
+                        "/class/*/assignment",
+                        "/assignment/*",
+                        "/submit/*",
+                        "/change-password"
+                ).authenticated()
                 .requestMatchers(HttpMethod.GET, "/**").permitAll()
                 .requestMatchers(HttpMethod.PUT, "/class/{classId}/chat/d/{messageId}").authenticated()
                 .requestMatchers("/ws/**", "/topic/**").permitAll()

@@ -125,19 +125,19 @@ public class UserServiceImpl implements UserService {
         String role = auth.getAuthorities().iterator().next().getAuthority();
         String email = auth.getName();
         if (!userChangePassword.getNewPassword().equals(userChangePassword.getConfirmPassword())) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response<>(400, "Mật khẩu mới và nhập lại không khớp", null));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response<>(400, "Nhập lại không khớp", null));
         }
         if(role.equals("ROLE_ADMIN")) {
             Teacher teacher = teacherRepository.findByEmail(email).orElse(null);
-            if (this.passwordEncoder.matches(userChangePassword.getNewPassword(), teacher.getPassword())) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response<>(400, "Mật khẩu cũ và mới không được khớp!", null));
+            if (!this.passwordEncoder.matches(userChangePassword.getOldPassword(), teacher.getPassword())) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response<>(400, "Mật khẩu cũ sai!", null));
             }
             teacher.setPassword(passwordEncoder.encode(userChangePassword.getNewPassword()));
             teacherRepository.save(teacher);
         }else if(role.equals("ROLE_USER")) {
             Student student = studentRepository.findByEmail(email).orElse(null);
-            if (this.passwordEncoder.matches(userChangePassword.getNewPassword(), student.getPassword())) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response<>(400, "Mật khẩu cũ và mới không được khớp!", null));
+            if (!this.passwordEncoder.matches(userChangePassword.getOldPassword(), student.getPassword())) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response<>(400, "Mật khẩu cũ sai!", null));
             }
             student.setPassword(passwordEncoder.encode(userChangePassword.getNewPassword()));
             studentRepository.save(student);
